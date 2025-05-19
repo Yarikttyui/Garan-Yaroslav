@@ -5,12 +5,12 @@
 
 # Типовые запросы
 1. Вывести товар с самой высокой ценой
-(```SELECT id, name, price, stock
+```SELECT id, name, price, stock
 FROM products
 ORDER BY price DESC
-LIMIT 1;```)
+LIMIT 1; ```
 
-2. Получить список заказов клиента с id=1 за период с 2025-01-01 по 2025-05-01
+3. Получить список заказов клиента с id=1 за период с 2025-01-01 по 2025-05-01
 
 (```SELECT id, order_date, total
 FROM orders
