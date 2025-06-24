@@ -1,6 +1,6 @@
 # Курсовая на тему: база данных для мебельного магазина
 
-![image](https://github.com/user-attachments/assets/172d6a06-4aff-4f03-b7c3-b7f31838b06c)
+![image](https://github.com/user-attachments/assets/f3f49c8d-6232-44d0-a6bb-47df77ee5bca)
 
 ---
 
