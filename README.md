@@ -1,6 +1,4 @@
-
-# Garan-Yaroslav  
-Курсовая по теме: база данных для мебельного магазина
+# Курсовая на тему: база данных для мебельного магазина
 
 ![image](https://github.com/user-attachments/assets/172d6a06-4aff-4f03-b7c3-b7f31838b06c)
 
@@ -8,121 +6,51 @@
 
 # Типовые запросы
 
-1. **Вывести товар с самой высокой ценой**
+1. **Сумма остатков товаров по категориям**
 
-```sql
-SELECT id, name, price, stock
-FROM products
-ORDER BY price DESC
-LIMIT 1;
-````
-
-2. **Получить список заказов клиента с id=1 за период с 2025-01-01 по 2025-05-01**
-
-```sql
-SELECT id, order_date, total
-FROM orders
-WHERE customer_id = 1
-AND order_date BETWEEN '2025-01-01' AND '2025-05-01';
+```
+SELECT 
+    c.name AS Категория, 
+    SUM(p.stock) AS Всего_на_складе
+FROM Products p
+JOIN Categories c ON p.category_id = c.id
+GROUP BY c.id, c.name
+ORDER BY Всего_на_складе DESC;
 ```
 
-3. **Вывести количество товаров по категориям**
+---
 
-```sql
-SELECT c.name AS category, COUNT(p.id) AS products_count
-FROM categories c
-LEFT JOIN products p ON p.category_id = c.id
-GROUP BY c.name;
+2. **Список всех заказов с клиентами**
+
 ```
+SELECT 
+    o.id AS Номер_заказа, 
+    c.full_name AS Клиент, 
+    o.order_date AS Дата_заказа, 
+    o.total AS Итоговая_сумма
+FROM Orders o
+JOIN Customers c ON o.customer_id = c.id
+ORDER BY o.order_date DESC;
+```
+
+---
+
+3. **Заказы конкретного клиента (id = 1)**
+
+```
+SELECT o.id, o.order_date, o.total
+FROM orders o
+WHERE o.customer_id = 1;
+
+```
+
+---
 
 4. **Вывести среднюю цену товаров по производителям**
 
-```sql
+```
 SELECT m.name AS manufacturer, AVG(p.price) AS avg_price
 FROM manufacturers m
 LEFT JOIN products p ON p.manufacturer_id = m.id
 GROUP BY m.name;
 ```
-
----------------------
-
-# Хранимые процедуры
-
-**Процедура для добавления нового продукта:**
-
-```sql
-CREATE PROCEDURE AddProduct(
-    IN pname VARCHAR(100),
-    IN pcategory INT,
-    IN pmaterial INT,
-    IN pmanufacturer INT,
-    IN psupplier INT,
-    IN pdescription TEXT,
-    IN pprice DECIMAL(10,2),
-    IN pstock INT
-)
-BEGIN
-    INSERT INTO products(name, category_id, material_id, manufacturer_id, supplier_id, description, price, stock)
-    VALUES (pname, pcategory, pmaterial, pmanufacturer, psupplier, pdescription, pprice, pstock);
-END //
-```
-
-**Вызов:**
-
-```sql
-CALL AddProduct('Стул «Современный»', 3, 1, 2, 1, 'Стул из дерева с мягким сиденьем', 3500.00, 15);
-```
-
-*Процедура добавит в таблицу products новый товар с названием «Стул «Современный», категории с ID=3, материалом ID=1, производителем ID=2, поставщиком ID=1, описанием, ценой 3500.00 и количеством на складе 15.*
-
-----------------------------------
-
-# Триггер
-
-**Пример триггера:**
-
-```sql
-CREATE TRIGGER ostattovar
-AFTER INSERT ON orderitems
-FOR EACH ROW
-BEGIN
-    UPDATE products
-    SET stock = stock - NEW.quantity
-    WHERE id = NEW.product_id;
-END //
-```
-
-*Триггер `ostattovar` срабатывает после вставки записи в таблицу `orderitems` и уменьшает поле `stock` товара в таблице `products` на количество заказанных единиц.*
-
--------------------------------------
-
-# Функция
-
-```sql
-SELECT IsProductInStock(5);
-```
-
-*Функция `IsProductInStock` принимает ID товара и возвращает TRUE, если на складе есть хотя бы одна единица товара, иначе FALSE.*
-
-------------------------------------
-
-# Представление
-
-```sql
-SELECT * FROM detail_employees;
-```
-*Это представление показывает основную информацию об сотрудниках.*
-
---------------------------------------
-
-# Роли
-
-**Роль менеджера по продажам**
-```sql
-CREATE ROLE IF NOT EXISTS SalesManager;
-GRANT SELECT, INSERT, UPDATE ON furniture_store.orders TO SalesManager;
-GRANT SELECT ON furniture_store.customers TO SalesManager;
-GRANT SELECT ON furniture_store.products TO SalesManager;
-GRANT EXECUTE ON PROCEDURE furniture_store.AddProduct TO SalesManager;
-```
-*Роль `SalesManager` предоставляет права на чтение и редактирование заказов, чтение клиентов и товаров, а также выполнение процедуры добавления нового продукта. Эта роль подходит для менеджеров, которые принимают заказы и ведут базу клиентов.*
